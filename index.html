@@ -21,7 +21,7 @@
             // Show thinking message
             output.textContent = "Thinking...";
 
-            puter.ai.chat(question, { model: "gpt-4.5" })
+            puter.ai.chat(question, { model: "gpt-4.1" })
                 .then(response => {
                     output.textContent = response;
                     puter.print(response);
