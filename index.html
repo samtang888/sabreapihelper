@@ -1,98 +1,11 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Sabre API Helper</title>
-    <style>
-        body { font-family: Arial, sans-serif; max-width: 800px; margin: 20px auto; padding: 0 10px; }
-        textarea, input { width: 100%; padding: 10px; margin: 10px 0; }
-        button { padding: 10px 20px; background: #0066cc; color: white; border: none; border-radius: 4px; cursor: pointer; }
-        pre { background: #f4f4f4; padding: 10px; overflow-x: auto; max-width: 100%; }
-        #response p { margin: 10px 0; }
-        @media (max-width: 600px) { pre { font-size: 14px; } }
-    </style>
-</head>
+<html>
 <body>
-    <h1>Sabre API Helper</h1>
-    <p>Enter your question about Sabre APIs (e.g., "Which API to search PNR?"):</p>
-    <input type="text" id="question" placeholder="Ask about Sabre APIs...">
-    <button id="askButton">Ask</button>
-    <div id="response"></div>
     <script src="https://js.puter.com/v2/"></script>
     <script>
-        // Debugging: Log when script starts
-        console.log('Script loaded at', new Date().toISOString());
-
-        // DOM elements
-        const questionInput = document.getElementById('question');
-        const responseDiv = document.getElementById('response');
-        const askButton = document.getElementById('askButton');
-
-        // Validate DOM elements
-        if (!questionInput || !responseDiv || !askButton) {
-            console.error('DOM elements missing:', { questionInput, responseDiv, askButton });
-            document.body.innerHTML += '<p style="color: red;">Error: Page elements not loaded correctly.</p>';
-            throw new Error('DOM elements not found');
-        }
-
-        // Check if Puter.js loaded
-        if (typeof puter === 'undefined') {
-            console.error('Puter.js not loaded');
-            responseDiv.innerHTML = '<p style="color: red;">Error: Puter.js failed to load. Check network or try again later.</p>';
-            throw new Error('Puter.js not loaded');
-        }
-
-        // Define askQuestion function
-        async function askQuestion() {
-            console.log('askQuestion called with question:', questionInput.value);
-            const question = questionInput.value.trim();
-            if (!question) {
-                responseDiv.innerHTML = '<p style="color: red;">Please enter a question.</p>';
-                return;
-            }
-
-            responseDiv.innerHTML = '<p>Loading...</p>';
-            try {
-                // Authenticate with Puter.js
-                console.log('Attempting Puter.js authentication');
-                await puter.auth.signIn();
-
-                // Use Puter.js with Codestral
-                console.log('Sending request to Puter.js API');
-                const response = await puter.ai.chat(
-                    `You are an expert on Sabre APIs, referencing developer.sabre.com. Provide concise answers about Sabre APIs, including API options and sample code snippets (REST and SOAP) for tasks like searching a PNR. Use markdown code blocks (```). User question: ${question}`,
-                    { model: 'codestral-latest', stream: true, max_tokens: 500 }
-                );
-
-                responseDiv.innerHTML = '<p>';
-                for await (const part of response) {
-                    responseDiv.innerHTML += part.text.replace(/\n/g, '<br>').replace(/```/g, '</p><pre>').replace(/```/g, '</pre><p>');
-                    responseDiv.scrollTop = responseDiv.scrollHeight;
-                }
-                responseDiv.innerHTML += '</p>';
-            } catch (error) {
-                console.error('Puter.js Error:', error);
-                responseDiv.innerHTML = `<p style="color: red;">Error: ${error.message || 'Failed to fetch response. Try again or check network.'}</p>`;
-            }
-        }
-
-        // Add event listeners
-        askButton.addEventListener('click', () => {
-            console.log('Ask button clicked');
-            askQuestion();
-        });
-        questionInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                console.log('Enter key pressed');
-                askQuestion();
-            }
-        });
-
-        // Debugging: Confirm listeners are attached
-        console.log('Event listeners attached to askButton and questionInput');
+        puter.ai.chat("What are the benefits of exercise?", { model: "gpt-4.1-nano" })
+            .then(response => {
+                puter.print(response);
+            });
     </script>
 </body>
 </html>
-
