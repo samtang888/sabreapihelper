@@ -24,7 +24,6 @@
             puter.ai.chat(question, { model: "gpt-4.1" })
                 .then(response => {
                     output.textContent = response;
-                    puter.print(response);
                 })
                 .catch(error => {
                     output.textContent = "Error: " + error.message;
