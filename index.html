@@ -71,16 +71,9 @@
             overflow-x: auto;
         }
         @media (max-width: 600px) {
-            h1 {
-                font-size: 1.5em;
-            }
-            .container {
-                margin: 10px;
-                padding: 0 10px;
-            }
-            button {
-                font-size: 0.9em;
-            }
+            h1 { font-size: 1.5em; }
+            .container { margin: 10px; padding: 0 10px; }
+            button { font-size: 0.9em; }
         }
     </style>
 </head>
@@ -99,9 +92,6 @@
     </div>
 
     <script>
-        // Replace with your xAI API key (for testing only; use backend for production)
-        const API_KEY = 'xai-Srld7A4U8fuCaop6dfIglpcxHNBngLZNmYtUHL9fFpM33LnjYn1zGCcHqAGvd5a2uPVZ5VYYpt02J824'; // WARNING: Do not use in production
-
         async function getAnswer() {
             const question = document.getElementById('userQuestion').value.trim();
             const responseSection = document.getElementById('responseSection');
@@ -116,43 +106,26 @@
             responseContent.innerHTML = '<p>Loading...</p>';
             responseSection.style.display = 'block';
 
-            const tryFetch = async (retries = 3, delay = 2000) => {
+            const tryFetch = async (retries = 3, delay = 5000) => {
                 for (let i = 0; i < retries; i++) {
                     try {
-                        const response = await fetch('https://cors-anywhere.herokuapp.com/https://api.x.ai/v1/chat/completions', {
+                        const response = await fetch('/.netlify/functions/ask', {
                             method: 'POST',
-                            headers: {
-                                'Authorization': `Bearer ${API_KEY}`,
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({
-                                model: 'grok-4-0709',
-                                messages: [
-                                    {
-                                        role: 'system',
-                                        content: 'You are an expert on Sabre APIs, referencing developer.sabre.com. Provide detailed, accurate answers about using Sabre APIs, including API options, step-by-step guides, and sample Sabre API code snippets (e.g., REST JSON or SOAP XML requests) where relevant. Format code snippets clearly and include them in the response for queries about specific API tasks like searching a PNR.'
-                                    },
-                                    {
-                                        role: 'user',
-                                        content: question
-                                    }
-                                ],
-                                temperature: 0.7,
-                                max_tokens: 1000
-                            })
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ question })
                         });
 
+                        const data = await response.json();
                         if (!response.ok) {
+                            const errorMessage = data.error || `HTTP ${response.status}: ${response.statusText}`;
                             if (response.status === 429 && i < retries - 1) {
                                 await new Promise(resolve => setTimeout(resolve, delay));
                                 continue;
                             }
-                            const errorData = await response.json();
-                            throw new Error(errorData.error?.message || 'API request failed');
+                            throw new Error(errorMessage);
                         }
 
-                        const data = await response.json();
-                        const answer = data.choices[0].message.content;
+                        const answer = data.answer;
                         responseContent.innerHTML = answer.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/```([\s\S]*?)```/g, '<pre>$1</pre>');
                         return;
                     } catch (error) {
@@ -160,8 +133,8 @@
                             await new Promise(resolve => setTimeout(resolve, delay));
                             continue;
                         }
-                        responseContent.innerHTML = `<p>Error: ${error.message}</p>`;
-                        console.error('Error:', error);
+                        responseContent.innerHTML = `<p>Error: ${error.message}. Check the console for details.</p>`;
+                        console.error('API Error:', error);
                         return;
                     }
                 }
