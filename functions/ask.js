@@ -11,14 +11,14 @@ exports.handler = async (event) => {
     }
 
     try {
-        const response = await fetch('https://api.x.ai/v1/chat/completions', {
+        const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
             method: 'POST',
             headers: {
-                'Authorization': `Bearer ${process.env.XAI_API_KEY}`,
+                'Authorization': `Bearer ${process.env.DEEPSEEK_API_KEY}`,
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                model: 'grok-4-0709',
+                model: 'DeepSeek-V3',
                 messages: [
                     {
                         role: 'system',
@@ -31,17 +31,17 @@ exports.handler = async (event) => {
             })
         });
 
-        const data = await response.text(); // Use text() to debug raw response
+        const text = await response.text();
         if (!response.ok) {
-            console.error('xAI API Error:', { status: response.status, body: data });
+            console.error('DeepSeek API Error:', { status: response.status, body: text });
             return {
                 statusCode: response.status,
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ error: `xAI API failed: ${data || response.statusText}` })
+                body: JSON.stringify({ error: `DeepSeek API failed: ${text || response.statusText}` })
             };
         }
 
-        const jsonData = JSON.parse(data); // Parse only if response is OK
+        const jsonData = JSON.parse(text);
         return {
             statusCode: 200,
             headers: { 'Content-Type': 'application/json' },
