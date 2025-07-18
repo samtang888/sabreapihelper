@@ -1,10 +1,11 @@
 const fetch = require('node-fetch');
 
 exports.handler = async (event) => {
-    const { question } = JSON.parse(event.body);
+    const { question } = JSON.parse(event.body || '{}');
     if (!question) {
         return {
             statusCode: 400,
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ error: 'No question provided' })
         };
     }
@@ -30,22 +31,28 @@ exports.handler = async (event) => {
             })
         });
 
-        const data = await response.json();
+        const data = await response.text(); // Use text() to debug raw response
         if (!response.ok) {
+            console.error('xAI API Error:', { status: response.status, body: data });
             return {
                 statusCode: response.status,
-                body: JSON.stringify({ error: data.error?.message || 'API request failed' })
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ error: `xAI API failed: ${data || response.statusText}` })
             };
         }
 
+        const jsonData = JSON.parse(data); // Parse only if response is OK
         return {
             statusCode: 200,
-            body: JSON.stringify({ answer: data.choices[0].message.content })
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ answer: jsonData.choices[0].message.content })
         };
     } catch (error) {
+        console.error('Function Error:', error.message);
         return {
             statusCode: 500,
-            body: JSON.stringify({ error: error.message })
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ error: `Server error: ${error.message}` })
         };
     }
 };
