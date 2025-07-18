@@ -1,25 +1,27 @@
-
 <!DOCTYPE html>
 <html>
 <head>
     <title>Ask a Question</title>
-    https://js.puter.com/v2/
 </head>
 <body>
-    <script src="https://js.puter.com/v2/"> </script>
     <h2>Ask a Question</h2>
     <input type="text" id="questionInput" placeholder="Type your question here" style="width: 300px;">
     <button onclick="askQuestion()">Ask</button>
     <pre id="responseOutput"></pre>
-
     
+    <script src="https://js.puter.com/v2/"> </script>
     <script>
         function askQuestion() {
             const question = document.getElementById("questionInput").value;
             const output = document.getElementById("responseOutput");
+
+            // Clear previous result
+            output.textContent = "";
+
+            // Show thinking message
             output.textContent = "Thinking...";
 
-            puter.ai.chat(question, { model: "gpt-4.1-nano" })
+            puter.ai.chat(question, { model: "gpt-4.5" })
                 .then(response => {
                     output.textContent = response;
                     puter.print(response);
@@ -31,3 +33,4 @@
     </script>
 </body>
 </html>
+
