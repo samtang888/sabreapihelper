@@ -18,7 +18,7 @@ exports.handler = async (event) => {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                model: 'DeepSeek-V3',
+                model: 'deepseek-chat', // Updated to correct model name
                 messages: [
                     {
                         role: 'system',
@@ -42,6 +42,15 @@ exports.handler = async (event) => {
         }
 
         const jsonData = JSON.parse(text);
+        if (!jsonData.choices || !jsonData.choices[0]?.message?.content) {
+            console.error('Invalid DeepSeek Response:', jsonData);
+            return {
+                statusCode: 500,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ error: 'Invalid response format from DeepSeek API' })
+            };
+        }
+
         return {
             statusCode: 200,
             headers: { 'Content-Type': 'application/json' },
