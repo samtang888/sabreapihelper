@@ -21,6 +21,10 @@
             // Show thinking message
             output.textContent = "Thinking...";
 
+            puter.ai.chat("You are Sabre API expert, reference to developer.sabre.com", { model: "gpt-4.1" });
+    .then(response => {
+        puter.print();
+    });
             puter.ai.chat(question, { model: "gpt-4.1" })
                 .then(response => {
                     output.textContent = response;
