@@ -13,7 +13,7 @@ exports.handler = async (event) => {
         const response = await fetch('https://api.x.ai/v1/chat/completions', {
             method: 'POST',
             headers: {
-                'Authorization': `Bearer ${process.env.xai-s8mkh9zj2ZIEcsryuRkqP36gH9Nb5YDeudJf0PdLYwWxchsc52gzkRwurpk3MgmgiTgMhTvxthG5vlvE}`,
+                'Authorization': `Bearer ${process.env.XAI_API_KEY}`,
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
