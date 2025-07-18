@@ -5,144 +5,54 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sabre API Helper</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f4f9;
-            color: #333;
-            line-height: 1.6;
-        }
-        .container {
-            max-width: 800px;
-            margin: 20px auto;
-            padding: 0 15px;
-        }
-        h1 {
-            text-align: center;
-            color: #005566;
-            font-size: 1.8em;
-        }
-        .input-section {
-            background: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
-        }
-        input[type="text"] {
-            width: 100%;
-            padding: 10px;
-            font-size: 1em;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            margin-bottom: 10px;
-            box-sizing: border-box;
-        }
-        button {
-            background-color: #005566;
-            color: #fff;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 1em;
-            width: 100%;
-        }
-        button:hover {
-            background-color: #003d4a;
-        }
-        .response-section {
-            background: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            display: none;
-        }
-        .response-section h2 {
-            color: #005566;
-            font-size: 1.4em;
-            margin-top: 0;
-        }
-        pre {
-            background: #f8f8f8;
-            padding: 10px;
-            border-radius: 4px;
-            overflow-x: auto;
-        }
-        @media (max-width: 600px) {
-            h1 { font-size: 1.5em; }
-            .container { margin: 10px; padding: 0 10px; }
-            button { font-size: 0.9em; }
-        }
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 20px auto; padding: 0 10px; }
+        textarea, input { width: 100%; padding: 10px; margin: 10px 0; }
+        button { padding: 10px 20px; background: #0066cc; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        pre { background: #f4f4f4; padding: 10px; overflow-x: auto; max-width: 100%; }
+        @media (max-width: 600px) { pre { font-size: 14px; } }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Sabre API Helper</h1>
-        <div class="input-section">
-            <p>Ask a question about using Sabre APIs (e.g., "Which API to search PNR?")</p>
-            <input type="text" id="userQuestion" placeholder="Type your question here...">
-            <button onclick="getAnswer()">Get Answer</button>
-        </div>
-        <div class="response-section" id="responseSection">
-            <h2>Answer</h2>
-            <div id="responseContent"></div>
-        </div>
-    </div>
-
+    <h1>Sabre API Helper</h1>
+    <p>Enter your question about Sabre APIs (e.g., "Which API to search PNR?"):</p>
+    <input type="text" id="question" placeholder="Ask about Sabre APIs...">
+    <button onclick="askQuestion()">Ask</button>
+    <div id="response"></div>
+    <script src="https://js.puter.com/v2/"></script>
     <script>
-        async function getAnswer() {
-            const question = document.getElementById('userQuestion').value.trim();
-            const responseSection = document.getElementById('responseSection');
-            const responseContent = document.getElementById('responseContent');
+        const questionInput = document.getElementById('question');
+        const responseDiv = document.getElementById('response');
 
+        async function askQuestion() {
+            const question = questionInput.value.trim();
             if (!question) {
-                responseContent.innerHTML = '<p>Please enter a question.</p>';
-                responseSection.style.display = 'block';
+                responseDiv.innerHTML = '<p style="color: red;">Please enter a question.</p>';
                 return;
             }
 
-            responseContent.innerHTML = '<p>Loading...</p>';
-            responseSection.style.display = 'block';
+            responseDiv.innerHTML = '<p>Loading...</p>';
+            try {
+                // Use Puter.js with Codestral for code generation
+                const response = await puter.ai.chat(
+                    `You are an expert on Sabre APIs, referencing developer.sabre.com. Provide concise answers about Sabre APIs, including API options and sample code snippets (REST and SOAP) for tasks like searching a PNR. Use markdown code blocks (```). User question: ${question}`,
+                    { model: 'codestral-latest', stream: true }
+                );
 
-            const tryFetch = async (retries = 3, delay = 5000) => {
-                for (let i = 0; i < retries; i++) {
-                    try {
-                        const response = await fetch('/.netlify/functions/ask', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ question })
-                        });
-
-                        const data = await response.json();
-                        if (!response.ok) {
-                            const errorMessage = data.error || `HTTP ${response.status}: ${response.statusText}`;
-                            if (response.status === 429 && i < retries - 1) {
-                                await new Promise(resolve => setTimeout(resolve, delay));
-                                continue;
-                            }
-                            throw new Error(errorMessage);
-                        }
-
-                        const answer = data.answer;
-                        responseContent.innerHTML = answer.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/```([\s\S]*?)```/g, '<pre>$1</pre>');
-                        return;
-                    } catch (error) {
-                        if (error.message.includes('429') && i < retries - 1) {
-                            await new Promise(resolve => setTimeout(resolve, delay));
-                            continue;
-                        }
-                        responseContent.innerHTML = `<p>Error: ${error.message}. Check the console for details.</p>`;
-                        console.error('API Error:', error);
-                        return;
-                    }
+                responseDiv.innerHTML = '';
+                for await (const part of response) {
+                    responseDiv.innerHTML += part.text.replace(/\n/g, '<br>').replace(/```/g, '</p><pre>').replace(/```/g, '</pre><p>');
+                    responseDiv.scrollTop = responseDiv.scrollHeight;
                 }
-            };
-
-            await tryFetch();
-            document.getElementById('userQuestion').value = '';
+            } catch (error) {
+                responseDiv.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+            }
         }
+
+        // Allow sending question with Enter key
+        questionInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') askQuestion();
+        });
     </script>
 </body>
 </html>
+
