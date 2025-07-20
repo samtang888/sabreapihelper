@@ -64,6 +64,7 @@
         <h2>Sabre API Helper</h2>
         <input type="text" id="questionInput" placeholder="Type your question here" />
         <i>E.g. use what api to search pnr</i><br><br>
+        <button onclick="clearInput()">Clear</button><br><Br>
         <button onclick="askQuestion()">Ask</button>
         <pre id="responseOutput"></pre>
     </div>
@@ -88,6 +89,12 @@
                 .catch(error => {
                     output.textContent = "Error: " + error.message;
                 });
+        }
+    </script>
+
+    <script>
+        function clearInput() {
+            document.getElementById("questionInput").value = "";
         }
     </script>
 </body>
