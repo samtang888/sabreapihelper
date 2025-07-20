@@ -14,7 +14,7 @@
         function askQuestion() {
             const question = document.getElementById("questionInput").value;
             const output = document.getElementById("responseOutput");
-            const request = 'You are Sabre API expert, reference to developer.sabre.com, ${question}? Provide step by step guideline and sample codes';
+            const request = `You are Sabre API expert, reference to developer.sabre.com, ${question}? Provide step by step guideline and sample codes`;
             
             // Clear previous result
             output.textContent = "";
