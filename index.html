@@ -81,7 +81,7 @@
             // Show thinking message
             output.textContent = "Thinking...";
 
-            puter.ai.chat(request, { model: "gpt-4o" })
+            puter.ai.chat(request, { model: "gpt-4.5-preview" })
                 .then(response => {
                     output.textContent = response;
                 })
